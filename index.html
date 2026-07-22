@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Configurable question library — product case study</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.44.0/iconfont/tabler-icons.min.css">
+<style>
+  :root{
+    --paper:#FAF8F3;
+    --panel:#FFFFFF;
+    --ink:#1E2422;
+    --ink-soft:#4B534F;
+    --ink-muted:#84887F;
+    --line:#E4E0D6;
+    --line-strong:#D3CDBE;
+    --accent:#2C4A52;
+    --accent-soft:#E4EBE9;
+    --amber:#8A5A12;
+    --amber-bg:#FBF0DD;
+    --red:#943B34;
+    --red-bg:#F8E9E6;
+    --green:#2F6F4E;
+    --green-bg:#E7F1EA;
+    --pro:#5A4A8A;
+    --pro-bg:#EEEAF6;
+    --radius:8px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    line-height:1.6;
+  }
+  .wrap{max-width:840px; margin:0 auto; padding:64px 28px 96px;}
+  .eyebrow{
+    font-size:12px; letter-spacing:0.12em; text-transform:uppercase;
+    color:var(--accent); font-weight:600; margin-bottom:14px;
+  }
+  h1{
+    font-family:Georgia,"Times New Roman",serif;
+    font-size:38px; font-weight:400; margin:0 0 10px; line-height:1.2;
+    color:var(--ink);
+  }
+  .subtitle{font-size:17px; color:var(--ink-soft); max-width:620px; margin:0 0 36px;}
+  .meta-row{
+    display:flex; flex-wrap:wrap; gap:10px 28px; padding:18px 0 34px;
+    border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+    margin-bottom:44px; font-size:13px; color:var(--ink-muted);
+  }
+  .meta-row div span{display:block; color:var(--ink); font-size:14px; margin-top:2px;}
+  h2{
+    font-family:Georgia,"Times New Roman",serif;
+    font-size:23px; font-weight:400; margin:0 0 6px; color:var(--ink);
+  }
+  .section{margin:56px 0;}
+  .section-num{
+    font-size:12px; color:var(--ink-muted); letter-spacing:0.08em; margin-bottom:6px;
+  }
+  p{margin:0 0 16px; font-size:15.5px; color:var(--ink-soft);}
+  ul.stories{margin:0; padding:0; list-style:none;}
+  ul.stories li{
+    display:flex; gap:12px; padding:11px 0; border-bottom:1px solid var(--line); font-size:15px; color:var(--ink-soft);
+  }
+  ul.stories li:last-child{border-bottom:none;}
+  ul.stories li i{color:var(--accent); font-size:17px; margin-top:2px; flex-shrink:0;}
+  .decisions{display:grid; grid-template-columns:1fr; gap:14px; margin-top:20px;}
+  .decision-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:18px 20px;
+  }
+  .decision-card .label{font-size:13px; font-weight:600; color:var(--accent); margin-bottom:6px;}
+  .decision-card p{margin:0; font-size:14.5px;}
+  .proto-frame{
+    background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:24px;
+    margin:22px 0 10px;
+  }
+  .proto-label{
+    font-size:12px; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-muted);
+    margin-bottom:16px; display:flex; align-items:center; gap:8px;
+  }
+  .proto-label i{font-size:14px;}
+  .caption{font-size:13.5px; color:var(--ink-muted); margin-top:10px;}
+
+  /* ---- shared UI bits for embedded prototypes ---- */
+  input[type=text], select, textarea{
+    font-family:inherit; font-size:14px; color:var(--ink); background:var(--paper);
+    border:1px solid var(--line-strong); border-radius:var(--radius); padding:8px 10px;
+  }
+  button{
+    font-family:inherit; font-size:13.5px; color:var(--ink); background:var(--panel);
+    border:1px solid var(--line-strong); border-radius:var(--radius); padding:8px 14px;
+    cursor:pointer;
+  }
+  button:hover{background:var(--accent-soft); border-color:var(--accent);}
+
+  /* question editor */
+  .qeditor{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:20px;}
+  .qeditor .qhead{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;}
+  .qeditor .qhead .title{font-size:15px; font-weight:600;}
+  .qeditor .qhead .draft{font-size:12px; color:var(--ink-muted);}
+  .qeditor label{font-size:12.5px; color:var(--ink-muted); display:block; margin-bottom:5px;}
+  .qeditor textarea{width:100%; resize:none; margin-bottom:14px;}
+  .qeditor .row2{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;}
+  .qeditor .row2 select{width:100%;}
+  .qeditor .actions{display:flex; justify-content:flex-end;}
+  .feedback-panel{display:none; margin-top:18px; border-top:1px solid var(--line); padding-top:16px;}
+  .feedback-panel .fhead{font-size:12.5px; color:var(--ink-muted); margin-bottom:10px; display:flex; align-items:center; gap:6px;}
+  .fitem{display:flex; gap:10px; align-items:flex-start; padding:10px 12px; border-radius:var(--radius); margin-bottom:8px; font-size:13px;}
+  .fitem i{font-size:17px; margin-top:1px; flex-shrink:0;}
+  .fitem .flabel{font-weight:600; display:block; margin-bottom:2px;}
+  .fitem.warning{background:var(--amber-bg);} .fitem.warning i, .fitem.warning .flabel{color:var(--amber);}
+  .fitem.danger{background:var(--red-bg);} .fitem.danger i, .fitem.danger .flabel{color:var(--red);}
+  .fitem.success{background:var(--green-bg);} .fitem.success i, .fitem.success .flabel{color:var(--green);}
+  .fitem.neutral{background:var(--paper);} .fitem.neutral i{color:var(--ink-muted);}
+  .fitem.neutral .flabel{color:var(--ink);}
+  .fitem span.body{color:var(--ink);}
+  .feedback-actions{display:flex; justify-content:flex-end; gap:8px; margin-top:12px;}
+  .published-msg{display:none; margin-top:14px; font-size:13px; color:var(--green); align-items:center; gap:6px;}
+
+  /* admin library */
+  .libwrap{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:20px;}
+  .lib-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;}
+  .lib-head .title{font-size:16px; font-weight:600;}
+  .lib-head .stats{font-size:13px; color:var(--ink-muted); margin-top:2px;}
+  .lib-filters{display:flex; gap:10px; margin:16px 0;}
+  .lib-filters input{flex:1;}
+  .lib-filters select{width:170px;}
+  .cat-label{
+    font-size:11.5px; color:var(--ink-muted); text-transform:uppercase; letter-spacing:0.06em;
+    padding:8px 4px; border-bottom:1px solid var(--line);
+  }
+  .qrow{display:flex; align-items:center; gap:12px; padding:10px 4px; border-bottom:1px solid var(--line);}
+  .qrow .eyeBtn{border:none; background:none; padding:4px; color:var(--ink-soft); cursor:pointer;}
+  .qrow .qtext{flex:1; font-size:14px;}
+  .qrow .bmark{font-size:12px; display:flex; align-items:center; gap:4px; flex-shrink:0;}
+  .qrow .bmark.on{color:var(--green);}
+  .qrow .bmark.off{color:var(--ink-muted);}
+  .qrow .vis-chip{font-size:12px; padding:3px 10px; border-radius:var(--radius); background:var(--paper); color:var(--ink-soft); flex-shrink:0;}
+  .qrow .vis-chip.pro{background:var(--pro-bg); color:var(--pro);}
+  .qrow .editBtn{border:none; background:none; padding:4px; color:var(--ink-soft); cursor:pointer;}
+  .lib-footer{display:flex; justify-content:space-between; align-items:center; margin-top:16px;}
+  .lib-footer .count{font-size:13px; color:var(--ink-muted);}
+
+  .footer{margin-top:70px; padding-top:24px; border-top:1px solid var(--line); font-size:13px; color:var(--ink-muted);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">Product case study</div>
+  <h1>A configurable question library for a survey platform</h1>
+  <p class="subtitle">How I'd approach turning a fixed, 250-question survey library into an admin-configurable, AI-assisted system — from problem framing through interactive prototype.</p>
+
+  <div class="meta-row">
+    <div>Role<span>Product / customer success leadership</span></div>
+    <div>Context<span>Enterprise employee experience (EX) survey platform</span></div>
+    <div>Focus<span>Product strategy, permissions design, applied AI</span></div>
+  </div>
+
+  <div class="section">
+    <div class="section-num">01 — the problem</div>
+    <h2>A library that can't flex to the customer</h2>
+    <p>On EX survey platforms, admin and creator users typically choose questions from a large fixed library — organized by category, often 200+ items — but usually cannot add, hide, or remove questions. Every user sees the same full library regardless of role.</p>
+    <p>Working closely with enterprise customers for years, I saw this cause two recurring problems: the library can't evolve to reflect a customer's own language or priorities, and creator users are exposed to hundreds of items even when only a narrow slice is relevant to their team, function, or seniority — creating noise and inconsistent survey design across an organization.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-num">02 — what it should do</div>
+    <h2>Core user stories</h2>
+    <ul class="stories">
+      <li><i class="ti ti-circle-check"></i> As an admin, I can add custom questions so the library reflects our own language and priorities.</li>
+      <li><i class="ti ti-circle-check"></i> As an admin, I can hide or remove questions so creators aren't shown irrelevant or outdated items.</li>
+      <li><i class="ti ti-circle-check"></i> As an admin, I can see which benchmark comparisons are available for a question, at the individual question level.</li>
+      <li><i class="ti ti-circle-check"></i> As an admin, I can control which portion of the library specific creator users or roles can see.</li>
+      <li><i class="ti ti-circle-check"></i> As an admin, when I save a new custom question, I get AI feedback on wording, duplication, and benchmark eligibility before it publishes.</li>
+      <li><i class="ti ti-circle-check"></i> As a user editing a question selected from the library, I'm warned if my changes are substantial enough that the question would lose its benchmark match, so I can decide whether to proceed as a new custom item or revert.</li>
+      <li><i class="ti ti-circle-check"></i> As a creator, I only see the questions I've been given access to, clearly organized by category.</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <div class="section-num">03 — design decisions worth calling out</div>
+    <h2>Where the judgment calls are</h2>
+    <div class="decisions">
+      <div class="decision-card">
+        <div class="label">Hide, don't delete</div>
+        <p>Removing a question outright breaks historical survey data. Hiding is the default: it removes a question from future use while preserving what's already been measured.</p>
+      </div>
+      <div class="decision-card">
+        <div class="label">Benchmarks live at the question level</div>
+        <p>Each question maps to its own benchmark. A highly customized question may have no benchmark match at all, and the system needs to say so plainly rather than implying a match that isn't there.</p>
+      </div>
+      <div class="decision-card">
+        <div class="label">AI validation is a soft gate, not a hard block</div>
+        <p>When an admin saves a custom question, AI checks it for wording clarity, duplication against the existing library, and benchmark mapping. The admin sees the feedback and can still publish — the goal is an informed decision, not a rule enforced on their behalf.</p>
+      </div>
+      <div class="decision-card">
+        <div class="label">Editing a library question can void its benchmark</div>
+        <p>Adding a new question checks whether it maps to a benchmark. Editing an existing one is a different, riskier check: has this question drifted far enough from its original wording that the existing benchmark no longer applies? If so, the user is warned before saving — the benchmark data already exists, so a silent mismatch here is worse than one on a brand-new question.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-num">04 — prototype</div>
+    <h2>Saving a custom question</h2>
+    <p>This is the moment the AI validation runs — after an admin drafts a question and chooses to save it to the library, not while they're still typing.</p>
+
+    <div class="proto-frame">
+      <div class="proto-label"><i class="ti ti-pointer"></i>Interactive — try clicking "Save to library"</div>
+
+      <div class="qeditor">
+        <div class="qhead">
+          <div class="title">Add custom question</div>
+          <div class="draft">Draft</div>
+        </div>
+        <label>Question text</label>
+        <textarea rows="3">My manager cares about me as a person and my career development, and always gives me clear feedback.</textarea>
+        <div class="row2">
+          <div>
+            <label>Category</label>
+            <select><option>Manager effectiveness</option><option>Engagement</option><option>Belonging</option><option>Career development</option></select>
+          </div>
+          <div>
+            <label>Response scale</label>
+            <select><option>5-point agreement</option><option>7-point agreement</option><option>Yes / no</option></select>
+          </div>
+        </div>
+        <div class="actions"><button id="saveBtn">Save to library</button></div>
+
+        <div class="feedback-panel" id="feedbackPanel">
+          <div class="fhead"><i class="ti ti-sparkles"></i>AI review before publishing</div>
+
+          <div class="fitem warning">
+            <i class="ti ti-copy"></i>
+            <div><span class="flabel">Possible overlap</span><span class="body">88% similar to an existing question: "My manager takes a genuine interest in my career development."</span></div>
+          </div>
+          <div class="fitem danger">
+            <i class="ti ti-alert-triangle"></i>
+            <div><span class="flabel">Double-barreled wording</span><span class="body">This asks about two things at once (personal care and feedback quality). Consider splitting into two questions.</span></div>
+          </div>
+          <div class="fitem neutral">
+            <i class="ti ti-chart-bar-off"></i>
+            <div><span class="flabel">No benchmark match</span><span class="body">Benchmarks are mapped at the individual question level. This wording is custom enough that it doesn't match any benchmarked item, so it will publish without comparison data.</span></div>
+          </div>
+          <div class="fitem success">
+            <i class="ti ti-check"></i>
+            <div><span class="flabel">Reading level ok</span><span class="body">Clear phrasing, appropriate for a general workforce audience.</span></div>
+          </div>
+
+          <div class="feedback-actions">
+            <button id="reviseBtn">Revise question</button>
+            <button id="publishBtn">Publish anyway</button>
+          </div>
+        </div>
+        <div class="published-msg" id="publishedMsg"><i class="ti ti-check"></i> Question published to library</div>
+      </div>
+      <p class="caption">Note the deliberate mix: a soft warning, a harder wording flag, a neutral "no match" outcome, and a positive confirmation — designed to inform the admin's decision rather than dictate it.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Managing the library</h2>
+    <p>The admin-facing view for hiding, organizing, and setting per-question visibility across creator groups.</p>
+
+    <div class="proto-frame">
+      <div class="proto-label"><i class="ti ti-pointer"></i>Interactive — try the eye icon on any row</div>
+
+      <div class="libwrap">
+        <div class="lib-head">
+          <div>
+            <div class="title">Question library</div>
+            <div class="stats">248 active &middot; 6 hidden</div>
+          </div>
+          <button><i class="ti ti-plus" style="font-size:15px; vertical-align:-2px; margin-right:4px;"></i>Add custom question</button>
+        </div>
+
+        <div class="lib-filters">
+          <input type="text" placeholder="Search questions">
+          <select><option>All categories</option><option>Manager effectiveness</option><option>Engagement</option><option>Belonging</option><option>Career development</option></select>
+          <select><option>All visibility groups</option><option>All creators</option><option>Admins only</option><option>People managers</option></select>
+        </div>
+
+        <div class="cat-label">Manager effectiveness</div>
+
+        <div class="qrow" data-hidden="false">
+          <button class="eyeBtn" title="Hide question" aria-label="Hide question"><i class="ti ti-eye"></i></button>
+          <div class="qtext">My manager takes a genuine interest in my career development.</div>
+          <span class="bmark on"><i class="ti ti-chart-bar"></i>Benchmarked</span>
+          <span class="vis-chip">All creators</span>
+          <button class="editBtn" aria-label="Edit question"><i class="ti ti-edit"></i></button>
+        </div>
+
+        <div class="qrow" data-hidden="false">
+          <button class="eyeBtn" title="Hide question" aria-label="Hide question"><i class="ti ti-eye"></i></button>
+          <div class="qtext">My manager gives me clear and actionable feedback.</div>
+          <span class="bmark on"><i class="ti ti-chart-bar"></i>Benchmarked</span>
+          <span class="vis-chip">All creators</span>
+          <button class="editBtn" aria-label="Edit question"><i class="ti ti-edit"></i></button>
+        </div>
+
+        <div class="qrow" data-hidden="false">
+          <button class="eyeBtn" title="Hide question" aria-label="Hide question"><i class="ti ti-eye"></i></button>
+          <div class="qtext">My manager cares about me as a person and my career development, and always gives me clear feedback.</div>
+          <span class="bmark off"><i class="ti ti-chart-bar-off"></i>Custom &middot; no benchmark</span>
+          <span class="vis-chip pro">Admins only</span>
+          <button class="editBtn" aria-label="Edit question"><i class="ti ti-edit"></i></button>
+        </div>
+
+        <div class="cat-label" style="margin-top:10px;">Career development</div>
+
+        <div class="qrow" data-hidden="false">
+          <button class="eyeBtn" title="Hide question" aria-label="Hide question"><i class="ti ti-eye"></i></button>
+          <div class="qtext">I see a clear path for growth within this organization.</div>
+          <span class="bmark on"><i class="ti ti-chart-bar"></i>Benchmarked</span>
+          <span class="vis-chip">All creators</span>
+          <button class="editBtn" aria-label="Edit question"><i class="ti ti-edit"></i></button>
+        </div>
+
+        <div class="qrow" data-hidden="true" style="opacity:0.55;">
+          <button class="eyeBtn" title="Unhide question" aria-label="Unhide question"><i class="ti ti-eye-off"></i></button>
+          <div class="qtext" style="text-decoration:line-through; color:var(--ink-muted);">This organization has a clear plan for my next promotion.</div>
+          <span class="bmark" style="color:var(--ink-muted);"><i class="ti ti-chart-bar"></i>Benchmarked</span>
+          <span class="vis-chip" style="color:var(--ink-muted);">Hidden</span>
+          <button class="editBtn" aria-label="Edit question"><i class="ti ti-edit"></i></button>
+        </div>
+
+        <div class="lib-footer">
+          <div class="count">Showing 5 of 254 questions</div>
+          <button><i class="ti ti-users" style="font-size:15px; vertical-align:-2px; margin-right:4px;"></i>Configure creator groups</button>
+        </div>
+      </div>
+      <p class="caption">Per-question visibility chips (not just category-level) show the access model working at the granularity admins actually need.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Editing an existing question</h2>
+    <p>A different check than saving a new question: here, the system is asking whether an edit has drifted far enough from the original wording that the existing benchmark no longer applies.</p>
+
+    <div class="proto-frame">
+      <div class="proto-label"><i class="ti ti-pointer"></i>Interactive — try editing the text, then click "Save changes"</div>
+
+      <div class="qeditor">
+        <div class="qhead">
+          <div class="title">Edit library question</div>
+          <div class="draft" style="display:flex; align-items:center; gap:4px; color:var(--green);"><i class="ti ti-chart-bar" style="font-size:13px;"></i>Currently benchmarked</div>
+        </div>
+        <label>Original wording</label>
+        <p style="font-size:13.5px; color:var(--ink-muted); background:var(--paper); border:1px solid var(--line); border-radius:var(--radius); padding:8px 10px; margin-bottom:14px;">My manager gives me clear and actionable feedback.</p>
+        <label>Edited wording</label>
+        <textarea id="editText" rows="2">My manager gives me feedback, and I feel supported in my growth here.</textarea>
+        <div class="actions" style="margin-top:14px;"><button id="editSaveBtn">Save changes</button></div>
+
+        <div class="feedback-panel" id="editWarningPanel">
+          <div class="fhead"><i class="ti ti-sparkles"></i>AI review of this edit</div>
+          <div class="fitem warning">
+            <i class="ti ti-chart-bar-off"></i>
+            <div><span class="flabel">Benchmark may no longer apply</span><span class="body">This edit changes the question enough — it now covers growth and support, not just feedback clarity — that the existing benchmark comparison would no longer be reliable.</span></div>
+          </div>
+          <div class="feedback-actions">
+            <button id="editRevertBtn">Revert to original</button>
+            <button id="editSaveNoBenchBtn">Save without benchmark</button>
+          </div>
+        </div>
+        <div class="published-msg" id="editSavedMsg"><i class="ti ti-check"></i> Changes saved</div>
+      </div>
+      <p class="caption">The benchmark data already exists here, which is what makes a silent mismatch riskier than on a brand-new question — the warning has to show up before the save completes, not after.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-num">05 — scope</div>
+    <h2>Phasing and open questions</h2>
+    <p><strong style="font-weight:600; color:var(--ink);">Phase 1:</strong> guided hide/show and reorganization, per-question or per-group visibility controls, read-only benchmark status.</p>
+    <p><strong style="font-weight:600; color:var(--ink);">Phase 2:</strong> fully custom question authoring with AI validation at save time; admin control over which specific benchmark cuts are selectable per question.</p>
+    <p><strong style="font-weight:600; color:var(--ink);">Open questions:</strong> whether visibility needs individual-question granularity or category/group-level is sufficient for v1; how custom questions get validated for benchmarking eligibility over time; whether AI validation feedback should ever require an explicit override/justification rather than a simple "publish anyway."</p>
+  </div>
+
+  <div class="footer">Kevin Carlson &middot; Product &amp; Customer Success &middot; prototype built to demonstrate product thinking, not affiliated with or representing any specific employer's actual roadmap or systems.</div>
+
+</div>
+
+<script>
+document.getElementById('saveBtn').addEventListener('click', function(){
+  document.getElementById('feedbackPanel').style.display = 'block';
+  document.getElementById('publishedMsg').style.display = 'none';
+});
+document.getElementById('reviseBtn').addEventListener('click', function(){
+  document.getElementById('feedbackPanel').style.display = 'none';
+});
+document.getElementById('publishBtn').addEventListener('click', function(){
+  document.getElementById('feedbackPanel').style.display = 'none';
+  document.getElementById('publishedMsg').style.display = 'flex';
+});
+
+document.getElementById('editSaveBtn').addEventListener('click', function(){
+  document.getElementById('editWarningPanel').style.display = 'block';
+  document.getElementById('editSavedMsg').style.display = 'none';
+});
+document.getElementById('editRevertBtn').addEventListener('click', function(){
+  document.getElementById('editText').value = 'My manager gives me clear and actionable feedback.';
+  document.getElementById('editWarningPanel').style.display = 'none';
+});
+document.getElementById('editSaveNoBenchBtn').addEventListener('click', function(){
+  document.getElementById('editWarningPanel').style.display = 'none';
+  document.getElementById('editSavedMsg').style.display = 'flex';
+});
+
+document.querySelectorAll('.eyeBtn').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    var row = btn.closest('.qrow');
+    var hidden = row.getAttribute('data-hidden') === 'true';
+    var text = row.querySelector('.qtext');
+    var chip = row.querySelector('.vis-chip');
+    if(hidden){
+      row.setAttribute('data-hidden','false');
+      row.style.opacity = '1';
+      text.style.textDecoration = 'none';
+      text.style.color = 'var(--ink)';
+      btn.querySelector('i').className = 'ti ti-eye';
+      btn.title = 'Hide question';
+      btn.setAttribute('aria-label','Hide question');
+      chip.textContent = 'All creators';
+      chip.style.color = 'var(--ink-soft)';
+    } else {
+      row.setAttribute('data-hidden','true');
+      row.style.opacity = '0.55';
+      text.style.textDecoration = 'line-through';
+      text.style.color = 'var(--ink-muted)';
+      btn.querySelector('i').className = 'ti ti-eye-off';
+      btn.title = 'Unhide question';
+      btn.setAttribute('aria-label','Unhide question');
+      chip.textContent = 'Hidden';
+      chip.style.color = 'var(--ink-muted)';
+    }
+  });
+});
+</script>
+</body>
+</html>
